@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['inject:use'] = 'TinyMCE Inject CSS Plugin benutzen';
+$string['injectcss:use'] = 'TinyMCE Inject CSS Plugin benutzen';
 $string['pluginname'] = 'Inject CSS';
 $string['privacy:metadata'] = 'Das Plugin tiny_injectcss fügt ausschließlich das Theme-CSS in den Tiny_MCE Editor ein. Es speichert keinerlei Nutzerdaten.';
