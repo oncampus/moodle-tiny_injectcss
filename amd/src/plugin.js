@@ -23,32 +23,112 @@
 
 import {getTinyMCE} from 'editor_tiny/loader';
 import {getPluginMetadata} from 'editor_tiny/utils';
-
 import {component, pluginName} from './common';
 
-
-const injectThemeCss = (editor) => {
+/**
+ * Converts /editor stylesheets into /all stylesheets.
+ * @param {Object} editor
+ * @returns {boolean}
+ */
+const handleNormalMode = (editor) => {
     const doc = editor.getDoc();
 
-    const stylesheetlinks = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
+    const editorRegex = /\/theme\/styles\.php\/[^/]+\/[^/]+\/editor$/; //phpcs:ignore
 
-    const editorLink = stylesheetlinks.find(l => /\/theme\/styles\.php\/[^/]+\/[^/]+\/editor$/.test(l.href));
+    const allStylesheets = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
 
-    const replacedEditorLink = editorLink.href.replace(/\/editor$/, '/all');
+    const editorStylesheet = allStylesheets.find(link => editorRegex.test(link.href));
 
-    const linkAlreadyExists = stylesheetlinks.some(l => l && l.href === replacedEditorLink);
+    if (!editorStylesheet) {
+        return false;
+    }
+
+    const replacedEditorStylesheet = editorStylesheet.href.replace(/\/editor$/, '/all');
+
+    const linkAlreadyExists = allStylesheets.some(l => l && l.href === replacedEditorStylesheet);
     if (linkAlreadyExists) {
-        return;
+        return false;
     }
 
     const newLink = doc.createElement('link');
     newLink.rel = 'stylesheet';
-    newLink.href = replacedEditorLink;
+    newLink.href = replacedEditorStylesheet;
     doc.head.appendChild(newLink);
-
+    return true;
 };
 
-// Setup the tiny_injectcss Plugin.
+/**
+ * Copy the theme styles.php links from parent into editor.
+ * @param {Object} editor
+ * @returns {boolean}
+ */
+const handleThemeDesignerMode = (editor) => {
+
+    const editorDoc = editor.getDoc();
+    const parentDoc = editor.getWin?.().parent?.document; //phpcs:ignore
+
+    const editorStylesheet = Array.from(
+        editorDoc.querySelectorAll('link[rel="stylesheet"]')
+    );
+
+    const allStylesheets = Array.from(
+        parentDoc.querySelectorAll('link[rel="stylesheet"]')
+    );
+
+    const existingHrefs = new Set(
+        editorStylesheet.map(link => link.href)
+    );
+
+    let stylesheetadded = false;
+
+    allStylesheets.forEach(stylesheet => {
+        const href = stylesheet.href;
+
+        if (!href.includes('/theme/styles')) {
+            return;
+        }
+
+        if (existingHrefs.has(href)) {
+            return;
+        }
+
+        const newLink = editorDoc.createElement('link');
+        newLink.rel = 'stylesheet';
+        newLink.href = href;
+        editorDoc.head.appendChild(newLink);
+
+        existingHrefs.add(href);
+
+        stylesheetadded = true;
+    });
+
+    return stylesheetadded;
+};
+
+/**
+ * Injects theme-specific CSS into the provided editor instance.
+ *
+ * This function retrieves the document object from the editor and performs the following:
+ * - Attempts to handle CSS injection for normal mode.
+ * - If normal mode is successfully handled, the process is terminated.
+ * - If normal mode is not handled, the function proceeds to handle the theme designer mode.
+ *
+ * @param {Object} editor - The editor instance where the theme CSS will be injected.
+ */
+const injectThemeCss = (editor) => {
+
+    const normalModeHandeled = handleNormalMode(editor);
+    if (normalModeHandeled) {
+        return;
+    }
+
+    handleThemeDesignerMode(editor);
+};
+
+
+/**
+ * Setup the tiny_injectcss Plugin.
+ */
 export default new Promise((resolve) => {
     // Note: The PluginManager.add function does not support asynchronous configuration.
     // Perform any asynchronous configuration here, and then call the PluginManager.add function.
