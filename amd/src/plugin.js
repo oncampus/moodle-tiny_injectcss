@@ -33,7 +33,7 @@ import {component, pluginName} from './common';
 const handleNormalMode = (editor) => {
     const doc = editor.getDoc();
 
-    const editorRegex = /\/theme\/styles\.php\/[^/]+\/[^/]+\/editor$/; //phpcs:ignore
+    const editorRegex = /\/theme\/styles\.php\/[^/]+\/[^/]+\/editor$/;
 
     const allStylesheets = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
 
@@ -65,7 +65,7 @@ const handleNormalMode = (editor) => {
 const handleThemeDesignerMode = (editor) => {
 
     const editorDoc = editor.getDoc();
-    const parentDoc = editor.getWin?.().parent?.document; //phpcs:ignore
+    const parentDoc = editor.getWin?.().parent?.document;
 
     const editorStylesheet = Array.from(
         editorDoc.querySelectorAll('link[rel="stylesheet"]')
@@ -146,6 +146,7 @@ export default new Promise((resolve) => {
             return pluginMetadata;
         });
         resolve([pluginName]);
+        return pluginMetadata;
     }).catch((error) => {
         window.console.error("Error during plugin setup:", error);
         resolve([pluginName]);
