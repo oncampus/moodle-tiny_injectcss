@@ -26,48 +26,32 @@ import {getPluginMetadata} from 'editor_tiny/utils';
 import {component, pluginName} from './common';
 
 /**
- * Converts /editor stylesheets into /all stylesheets.
- * @param {Object} editor
- * @returns {boolean}
+ * Injects theme-specific CSS into the provided editor instance.
+ *
+ * This function retrieves the document object from the editor and performs the following:
+ * - Attempts to handle CSS injection for normal mode.
+ * - If normal mode is successfully handled, the process is terminated.
+ * - If normal mode is not handled, the function proceeds to handle the theme designer mode.
+ *
+ * @param {Object} editor - The editor instance where the theme CSS will be injected.
  */
-const handleNormalMode = (editor) => {
-    const doc = editor.getDoc();
+const injectThemeCss = (editor) => {
 
-    const editorRegex = /\/theme\/styles\.php\/[^/]+\/[^/]+\/editor$/;
-
-    const allStylesheets = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
-
-    const editorStylesheet = allStylesheets.find(link => editorRegex.test(link.href));
-
-    if (!editorStylesheet) {
-        return false;
-    }
-
-    const replacedEditorStylesheet = editorStylesheet.href.replace(/\/editor$/, '/all');
-
-    const linkAlreadyExists = allStylesheets.some(l => l && l.href === replacedEditorStylesheet);
-    if (linkAlreadyExists) {
-        return false;
-    }
-
-    const newLink = doc.createElement('link');
-    newLink.rel = 'stylesheet';
-    newLink.href = replacedEditorStylesheet;
-    doc.head.appendChild(newLink);
-    return true;
-};
-
-/**
- * Copy the theme styles.php links from parent into editor.
- * @param {Object} editor
- * @returns {boolean}
- */
-const handleThemeDesignerMode = (editor) => {
-
+    const editorBody = editor.getBody();
     const editorDoc = editor.getDoc();
-    const parentDoc = editor.getWin?.().parent?.document;
+    const parentDoc = window.document;
 
-    const editorStylesheet = Array.from(
+    if (!editorDoc || !editorBody || !parentDoc) {
+        return false;
+    }
+
+    const parentBody = parentDoc.body;
+
+    if (!parentBody) {
+        return false;
+    }
+
+    const editorStylesheets = Array.from(
         editorDoc.querySelectorAll('link[rel="stylesheet"]')
     );
 
@@ -76,17 +60,14 @@ const handleThemeDesignerMode = (editor) => {
     );
 
     const existingHrefs = new Set(
-        editorStylesheet.map(link => link.href)
+        editorStylesheets.map(link => link.href)
     );
 
     let stylesheetadded = false;
 
     allStylesheets.forEach(stylesheet => {
-        const href = stylesheet.href;
 
-        if (!href.includes('/theme/styles')) {
-            return;
-        }
+        const href = stylesheet.href;
 
         if (existingHrefs.has(href)) {
             return;
@@ -102,27 +83,13 @@ const handleThemeDesignerMode = (editor) => {
         stylesheetadded = true;
     });
 
+    const editorStylesheet = Array.from(
+        editorDoc.querySelectorAll('link[rel="stylesheet"]')
+    ).filter(link => link.href.endsWith('/editor'));
+
+    editorStylesheet.forEach(link => link.remove());
+
     return stylesheetadded;
-};
-
-/**
- * Injects theme-specific CSS into the provided editor instance.
- *
- * This function retrieves the document object from the editor and performs the following:
- * - Attempts to handle CSS injection for normal mode.
- * - If normal mode is successfully handled, the process is terminated.
- * - If normal mode is not handled, the function proceeds to handle the theme designer mode.
- *
- * @param {Object} editor - The editor instance where the theme CSS will be injected.
- */
-const injectThemeCss = (editor) => {
-
-    const normalModeHandeled = handleNormalMode(editor);
-    if (normalModeHandeled) {
-        return;
-    }
-
-    handleThemeDesignerMode(editor);
 };
 
 
