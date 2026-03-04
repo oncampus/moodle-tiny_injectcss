@@ -88,8 +88,6 @@ const injectThemeCss = (editor) => {
     return stylesheetadded;
 };
 
-
-
 /**
  * Setup the tiny_injectcss Plugin.
  */
