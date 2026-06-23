@@ -85,6 +85,9 @@ const injectThemeCss = (editor) => {
 
     editorStylesheet.forEach(link => link.remove());
 
+    // Restore the body padding that the removed core /editor content stylesheet provided.
+    editorBody.classList.add('p-2');
+
     return stylesheetadded;
 };
 
