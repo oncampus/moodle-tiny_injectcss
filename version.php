@@ -28,5 +28,4 @@ $plugin->component = 'tiny_injectcss';
 $plugin->release = '5.3.0';
 $plugin->version = 2026091600;
 $plugin->requires = 2026091600;
-$plugin->supported = [503];
 $plugin->maturity = MATURITY_STABLE;
