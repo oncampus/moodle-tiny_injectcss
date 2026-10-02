@@ -17,6 +17,7 @@
 namespace tiny_injectcss;
 
 use context;
+use editor_tiny\editor;
 use editor_tiny\plugin;
 
 /**
@@ -27,4 +28,24 @@ use editor_tiny\plugin;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class plugininfo extends plugin {
+    /**
+     * Determine whether this Tiny plugin should be enabled for the given context.
+     *
+     * @param context $context
+     * @param array $options
+     * @param array $fpoptions
+     * @param editor|null $editor
+     * @return bool
+     */
+    public static function is_enabled(
+        context $context,
+        array $options,
+        array $fpoptions,
+        ?editor $editor = null
+    ): bool {
+        global $PAGE;
+        // In mod_newsletter a css file is supplied by the user. It is
+        // also used for e-mails so we do not want insert our theme css.
+        return $PAGE->pagetype !== 'mod-newsletter-view';
+    }
 }
