@@ -83,12 +83,6 @@ const injectThemeCss = (editor) => {
         stylesheetadded = true;
     });
 
-    const editorStylesheet = Array.from(
-        editorDoc.querySelectorAll('link[rel="stylesheet"]')
-    ).filter(link => link.href.endsWith('/editor'));
-
-    editorStylesheet.forEach(link => link.remove());
-
     return stylesheetadded;
 };
 
